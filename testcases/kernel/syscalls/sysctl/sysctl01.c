@@ -1,6 +1,7 @@
 /*
  * Copyright (c) International Business Machines  Corp., 2001
  * Copyright (c) 2018 Xiao Yang <yangx.jy@cn.fujitsu.com>
+ * Copyright (c) 2019 SUSE.  All Rights Reserved.
  *
  * This program is free software;  you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +78,19 @@ static void setup(void)
 	/* get kernel name and information */
 	if (uname(&buf) == -1)
 		tst_brk(TBROK | TERRNO, "uname() failed");
+
+	/* revert uname change in case of kGraft/livepatch */
+	char *klp_tag;
+	char *right_brace;
+
+	klp_tag = strstr(buf.version, "/kGraft-");
+	if (!klp_tag)
+		klp_tag = strstr(buf.version, "/lp-");
+	if (klp_tag) {
+		right_brace = strchr(klp_tag, ')');
+		if (right_brace)
+			strcpy(klp_tag, right_brace);
+	}
 }
 
 static struct tst_test test = {
